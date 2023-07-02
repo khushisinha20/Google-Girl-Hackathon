@@ -14,9 +14,6 @@ with open(circuit_file, "r") as file:
 # Replace the ~ operator with not
 circuit_logic = circuit_logic.replace("~", "not ")
 
-# Evaluate the value of Z
-z_value = eval("Z")
-
 # Read the fault file to obtain the fault node location and fault type
 with open(fault_file, "r") as file:
     fault_node_location = None
@@ -51,6 +48,8 @@ for combination in input_combinations:
     if (fault_type == "SA0" and fault_condition == 0) or (fault_type == "SA1" and fault_condition == 1):
         fault_test_input = combination
         break
+
+z_value = eval('Z')
 
 # Print the fault test input vector and the expected output for confirmation of the fault
 with open(output_file, "w") as file:
