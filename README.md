@@ -18,7 +18,7 @@ git clone https://github.com/khushisinha20/Google-Girl-Hackathon.git
     - The circuit will always produce a boolean output represented by 'Z'.
     - The circuit uses the following logic gates: AND (&), OR (|), NOT (~), and XOR (^).
     - The circuit must be a purely combinational logic circuit.
-    - Internal nodes in the circuit should be named as "net_<alphanumeric string>".
+    - Internal nodes in the circuit should be named as "net_&lt;alphanumeric_string&gt;".
     - Every input (A, B, C, D) should be used exactly once within the circuit.
 3. In the `fault.txt` file, provide the fault information in the following format:
     - `FAULT_AT = <fault_node_location>`: Specify the location of the fault node in the circuit.
