@@ -42,10 +42,12 @@ def get_fault_info(fault_file):
 
     return fault_node_location, fault_type
 
+def generate_input_combinations(input_variables):
+    return list(itertools.product([0, 1], repeat=len(input_variables)))
+
 def find_fault_test_input(circuit_logic, fault_info, input_variables):
     fault_node_location, fault_type = fault_info
-
-    input_combinations = list(itertools.product([0, 1], repeat=len(input_variables)))
+    input_combinations = generate_input_combinations(input_variables)
 
     for combination in input_combinations:
         input_values = {var: val for var, val in zip(input_variables, combination)}
