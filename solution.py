@@ -1,58 +1,78 @@
 import itertools
 
-# Define the circuit file path
-circuit_file = "circuit.txt"
-# Define the fault file path
-fault_file = "fault.txt"
-# Define the output file path
-output_file = "output.txt"
+def read_file(file_path):
+    try:
+        with open(file_path, "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {file_path}")
 
-# Read the circuit file to obtain the circuit logic
-with open(circuit_file, "r") as file:
-    circuit_logic = file.read()
+def write_file(file_path, content):
+    try:
+        with open(file_path, "w") as file:
+            file.write(content)
+    except IOError:
+        raise IOError(f"Error writing to file: {file_path}")
 
-# Replace the ~ operator with not
-circuit_logic = circuit_logic.replace("~", "not ")
+def evaluate_circuit(circuit_logic, input_values):
+    Z = None  # Initialize Z variable
+    for variable, value in input_values.items():
+        exec(f"{variable} = {value}", globals())
+    exec(circuit_logic.replace("~", "not "), globals())
 
-# Read the fault file to obtain the fault node location and fault type
-with open(fault_file, "r") as file:
+    if "Z" in globals():  # Check if Z is defined
+        Z = globals()["Z"]
+
+    return Z
+
+def get_fault_info(fault_file):
     fault_node_location = None
     fault_type = None
 
-    for line in file:
-        variable, value = line.strip().split("=")
-        if variable.strip() == "FAULT_AT":
-            fault_node_location = value.strip()
-        elif variable.strip() == "FAULT_TYPE":
-            fault_type = value.strip()
+    with open(fault_file, "r") as file:
+        for line in file:
+            variable, value = line.strip().split("=")
+            if variable.strip() == "FAULT_AT":
+                fault_node_location = value.strip()
+            elif variable.strip() == "FAULT_TYPE":
+                fault_type = value.strip()
 
-# Initialize the input vector for testing the fault
-fault_test_input = []
+    if not fault_node_location or not fault_type:
+        raise ValueError("Fault information not found in the fault file")
 
-# Iterate through all possible combinations of input values for A, B, C, and D
-input_variables = ["A", "B", "C", "D"]
-input_combinations = list(itertools.product([0, 1], repeat=len(input_variables)))
+    return fault_node_location, fault_type
 
-for combination in input_combinations:
-    # Assign the current input combination to the input variables
-    for variable, value in zip(input_variables, combination):
-        exec(f"{variable} = {value}")
+def find_fault_test_input(circuit_logic, fault_info, input_variables):
+    fault_node_location, fault_type = fault_info
 
-    # Evaluate the circuit output
-    exec(circuit_logic)
+    input_combinations = list(itertools.product([0, 1], repeat=len(input_variables)))
 
-    # Check if the fault condition is satisfied at the fault node
-    fault_condition = eval(fault_node_location)
+    for combination in input_combinations:
+        input_values = {var: val for var, val in zip(input_variables, combination)}
+        Z = evaluate_circuit(circuit_logic, input_values)
+        fault_condition = eval(fault_node_location)
 
-    # Check if the fault condition matches the fault type
-    if (fault_type == "SA0" and fault_condition == 0) or (fault_type == "SA1" and fault_condition == 1):
-        fault_test_input = combination
-        break
+        if (fault_type == "SA0" and fault_condition == 0) or (fault_type == "SA1" and fault_condition == 1):
+            return combination, Z
 
-z_value = eval('Z')
+    raise ValueError("No fault test input found that satisfies the fault condition")
 
-# Print the fault test input vector and the expected output for confirmation of the fault
-with open(output_file, "w") as file:
-    file.write("Input Vector\tExpected Output\n")
-    input_vector = ", ".join(f"{variable}={value}" for variable, value in zip(input_variables, fault_test_input))
-    file.write(f"{input_vector}\t{z_value}\n")
+def main():
+    circuit_file = "circuit.txt"
+    fault_file = "fault.txt"
+    output_file = "output.txt"
+    input_variables = ["A", "B", "C", "D"]
+
+    try:
+        circuit_logic = read_file(circuit_file)
+        fault_info = get_fault_info(fault_file)
+        fault_test_input, expected_output = find_fault_test_input(circuit_logic, fault_info, input_variables)
+
+        input_vector = ", ".join(f"{variable}={value}" for variable, value in zip(input_variables, fault_test_input))
+        content = f"Input Vector\t\tExpected Output\n{input_vector}\t{expected_output}\n"
+        write_file(output_file, content)
+    except (FileNotFoundError, IOError, ValueError) as e:
+        print(f"An error occurred: {str(e)}")
+
+if __name__ == "__main__":
+    main()
