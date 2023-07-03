@@ -15,12 +15,12 @@ def write_file(file_path, content):
         raise IOError(f"Error writing to file: {file_path}")
 
 def evaluate_circuit(circuit_logic, input_values):
-    Z = None  # Initialize Z variable
+    Z = None  
     for variable, value in input_values.items():
         exec(f"{variable} = {value}", globals())
     exec(circuit_logic.replace("~", "not "), globals())
 
-    if "Z" in globals():  # Check if Z is defined
+    if "Z" in globals():  
         Z = globals()["Z"]
 
     return Z
