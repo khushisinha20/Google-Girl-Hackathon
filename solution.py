@@ -37,16 +37,25 @@ class FaultTestFinder:
     def find_fault_test_input(self, circuit_logic, fault_info, input_variables):
         fault_node_location, fault_type = fault_info
         input_combinations = self.generate_input_combinations(input_variables)
+        fault_identifying_combination = None
+        output = None
 
         for combination in input_combinations:
             input_values = {var: val for var, val in zip(input_variables, combination)}
             Z = self.circuit_evaluator.evaluate_circuit(circuit_logic, input_values)
             fault_condition = eval(fault_node_location)
 
+            if (fault_type == "SA0" and fault_condition == 1) or (fault_type == "SA1" and fault_condition == 0):
+                fault_identifying_combination = combination
+
             if (fault_type == "SA0" and fault_condition == 0) or (fault_type == "SA1" and fault_condition == 1):
-                return combination, Z
+                output = Z
+
+            if output is not None and fault_identifying_combination is not None:
+                return fault_identifying_combination, output
 
         raise ValueError("No fault test input found that satisfies the fault condition")
+
 
 
 class FileManager:

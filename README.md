@@ -50,7 +50,7 @@ FAULT_TYPE = SA0
 #### Expected Output (`output.txt`):
 ```makefile
 Input Vector       Expected Output
-A=0, B=0, C=0, D=0   Z=1
+A=0, B=0, C=0, D=1   Z=1
 ```
 
 <p>In this example, the code will identify the input vector [0, 0, 0, 0] that will reveal the fault at node net_f. The expected output for this input vector is Z=1.</p>
